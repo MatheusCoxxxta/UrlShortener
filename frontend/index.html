@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="htmx-config" content='{"selfRequestsOnly": false}' />
+    <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+    <title>URL Shortener</title>
+  </head>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #fdfdfd;
+    }
+
+    .pageWrapper {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      text-align: center;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      width: 250px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 10px 15px;
+      margin-top: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #disappear {
+      border: none;
+    }
+
+    #disappearLabel {
+      color: white;
+    }
+  </style>
+
+  <body>
+    <div class="pageWrapper">
+      <div class="container">
+        <form
+          id="urlForm"
+          hx-post="https://salty-singers-lick.loca.lt/url"
+          hx-on::before-request="customizeRequest(event)"
+          hx-on::after-request="handleResponse(event)"
+          hx-target="#responseSpan"
+          hx-ext="json-enc"
+        >
+          <label for="url-input">URL Shortener</label><br />
+          <input type="text" id="url" name="url" placeholder="Enter a URL" />
+
+          <button>Get Short URL</button>
+        </form>
+      </div>
+      <div class="container" id="disappear">
+        <span id="disappearLabel">Short URL: </span>
+        <span id="responseSpan"></span>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    function customizeRequest(event) {
+      const urlInput = document.getElementById("url").value;
+
+      const payload = {
+        url: urlInput,
+      };
+
+      event.detail.body = JSON.stringify(payload);
+    }
+
+    function handleResponse(event) {
+      const responseSpan = document.getElementById("responseSpan");
+
+      try {
+        const value = event.detail.xhr.responseText;
+
+        if (!value) {
+          responseSpan.innerText = "Error parsing the response!";
+        }
+
+        responseSpan.innerText = value;
+      } catch (error) {
+        responseSpan.innerText = "Error parsing the response!";
+      } finally {
+        const disappearId = document.getElementById("disappear");
+        const disappearLabel = document.getElementById("disappearLabel");
+
+        disappearId.style.borderWidth = "1px";
+        disappearLabel.style.color = "black";
+      }
+    }
+  </script>
+</html>

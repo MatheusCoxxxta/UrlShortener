@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="htmx-config" content='{"selfRequestsOnly": false}' />
+    <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+    <title>Shortened URL</title>
+  </head>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #fdfdfd;
+    }
+  </style>
+  <body>
+    <div
+      id="originalURL"
+      hx-get="http://localhost:4150/url"
+      hx-trigger="load delay:500ms"
+      hx-on::before-request="customizeRequest(event)"
+      hx-on::after-request="handleResponse(event)"
+      hx-target="#originalURL"
+    ></div>
+  </body>
+
+  <script>
+    let id;
+    let timeCount = 5;
+
+    function getIdFromURL() {
+      const params = window.location.href.split("?");
+      const param = params[1];
+      const [, value] = param.split("=");
+
+      id = value;
+    }
+
+    getIdFromURL();
+
+    function customizeRequest(event) {
+      event.detail.xhr.open(
+        "GET",
+        "https://salty-singers-lick.loca.lt/url/" + id,
+        true
+      );
+    }
+
+    function handleResponse(event) {
+      const originalURL = document.getElementById("originalURL");
+
+      try {
+        const value = event.detail.xhr.responseText;
+
+        if (!value) {
+          originalURL.innerText = "Error parsing the response!";
+        }
+
+        const jsonValue = JSON.parse(value);
+
+        originalURL.innerText = `Redirecting to: ${jsonValue.url} after 5s...`;
+        originalURL.innerText = `Redirecting to: ${jsonValue.url} after 5s...`;
+
+        setInterval(() => {
+          originalURL.innerText = `Redirecting to: ${
+            jsonValue.url
+          } after ${timeCount--}s...`;
+        }, 1000);
+
+        setTimeout(() => {
+          window.location.replace(jsonValue.url);
+        }, 5000);
+      } catch (error) {
+        originalURL.innerText = "Error parsing the response!";
+      }
+    }
+  </script>
+</html>

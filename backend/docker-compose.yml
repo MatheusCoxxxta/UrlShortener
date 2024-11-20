@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  url_shortener_redis:
+    image: redis:latest
+    ports:
+      - "6378:6379"
+    environment:
+      REDIS_PASSWORD: "docker"
+    command: ["redis-server", "--requirepass", "docker"]
+    networks:
+      - url_shortener-network
+
+networks:
+  url_shortener-network:
+    driver: bridge
